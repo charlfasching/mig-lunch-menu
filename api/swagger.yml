@@ -1,0 +1,151 @@
+openapi: 3.0.0
+servers:
+  - description: Swagger HUB 
+    url: https://virtserver.swaggerhub.com/CHARLFASCHING_1/FoodMenu/1.0.0
+info:
+  description: This is a REST API for FoodMenu APP
+  version: "1.1.0"
+  title: Food Menu API
+  contact:
+    email: you@your-company.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: public
+    description: Open calls accessible to anyone
+paths:
+  /dish:
+    get:
+      tags:
+        - public
+      summary: retrieves data entries regarding dishes 
+      operationId: listDish
+      description: |
+        This is the retrieval endpoints to list available menu items 
+        filtered depending on the parameters passed in.
+        when no params are given, it defaults to all items for Today
+      parameters:
+        - in: query
+          name: fromDay
+          description: List dishes from a specific day, also serves as lower limit when 'toDay' parameter is given
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2017-07-20"
+            description: "Needs to conform to RFC 3339"
+        - in: query
+          name: toDay
+          description: Upper boundary of date range
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2017-07-22"
+            description: "Needs to conform to RFC 3339"
+        - in: query
+          name: limit
+          description: number of records to return
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 50
+            default: 5
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DishItem'
+        '400':
+          description: bad input parameter
+    post:
+      tags:
+        - public
+      summary: adds an new dish
+      operationId: addDish
+      description: | 
+        Adds a menu item to the menu, this has to be a new item for a specific day. <br>
+        Although it may be a repeat from a previous day, it is seen as a new menu item on a new day
+      responses:
+        '201':
+          description: menu item created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DishItem'
+        '400':
+          description: 'invalid input, some parameter/value needs adjustment'
+        '409':
+          description: 'an existing item with same date/name already exists'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DishItem'
+        description: menu item to add
+    put:
+      tags:
+        - public
+      summary: update an existing dish
+      operationId: updateDish
+      description: | 
+        Adds a menu item to the menu, this has to be a new item for a specific day. <br>
+        Although it may be a repeat from a previous day, it is seen as a new menu item on a new day
+      responses:
+        '202':
+          description: 'menu item updated'
+        '400':
+          description: 'invalid input, some parameter/value needs adjustment'
+        '410':
+          description: 'Item requested not found'
+          
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DishItem'
+        description: menu item to add
+components:
+  schemas:
+    DishItem:
+      type: object
+      required:
+        - id
+        - name
+        - manufacturer
+        - releaseDate
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        name:
+          type: string
+          example: Spagetti Bolognaise
+        servedOn:
+          type: string
+          format: date
+          example: '2017-08-29'
+        price:
+          type: number
+          format: float
+          example: 5.60
+        description:
+          type: string
+          example: 'Spagetti pasta with beef mince and tomato cream sauce'
+        image:
+          type: string
+          format: uri
+          example: 'web address of image'
+        allergies:
+          type: array
+          items:
+            type: string
+          example: ['Milk, Gluten']
