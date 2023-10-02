@@ -1,0 +1,14 @@
+{
+	"id": "c72bfe44-9de1-4821-80d0-e57dae268d03",
+	"name": "Uitsmijter",
+	"servedOn": "2023-09-29",
+	"price": 3.7,
+	"description": "Two fried eggs, two slices of bread with ham and cheese",
+	"rating": 5,
+	"image": "https://images.pexels.com/photos/6287520/pexels-photo-6287520.jpeg",
+	"allergies": [
+		"Lactose",
+		"Gluten",
+		"Egg"
+	]
+}
