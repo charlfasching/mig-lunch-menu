@@ -2,8 +2,8 @@
   "swagger" : "2.0",
   "info" : {
     "description" : "This is a REST API for FoodMenu APP",
-    "version" : "1.3.0",
-    "title" : "Food Menu API V3"
+    "version" : "1.1.0",
+    "title" : "Food Menu API"
   },
   "host" : "9nky864y69.execute-api.eu-central-1.amazonaws.com",
   "basePath" : "/test",
@@ -12,7 +12,6 @@
     "/dish" : {
       "get" : {
         "operationId" : "listDish",
-        "consumes" : [ "application/json" ],
         "produces" : [ "application/json" ],
         "parameters" : [ {
           "name" : "limit",
@@ -45,31 +44,28 @@
           "400" : {
             "description" : "400 response",
             "schema" : {
-              "$ref" : "#/definitions/MutationResponse"
+              "$ref" : "#/definitions/GenericResponse"
             }
           }
         },
         "x-amazon-apigateway-request-validator" : "Validate query string parameters and headers",
         "x-amazon-apigateway-integration" : {
-          "type" : "mock",
+          "credentials" : "arn:aws:iam::664728525867:role/API-GW-Invoke-Lambda",
+          "httpMethod" : "POST",
+          "uri" : "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:664728525867:function:GetDish/invocations",
           "responses" : {
             "default" : {
-              "statusCode" : "200",
-              "responseTemplates" : {
-                "application/json" : "[\r\n    {\r\n        \"id\" : \"d290f1ee-6c54-4b01-90e6-d701748f0851\",\r\n        \"name\": \"Spaghetti Bolognese\",\r\n        \"servedOn\" : \"2023-09-28\",\r\n        \"price\": 4.6,\r\n        \"description\": \"Spaghetti pasta with beef mince and tomato cream sauce\",\r\n        \"rating\": 3,\r\n        \"image\": \"https://images.pexels.com/photos/6287520/pexels-photo-6287520.jpeg\",\r\n        \"allergies\": [\"Lactose\", \"Gluten\"]\r\n    },\r\n    {\r\n        \"id\" : \"c72bfe44-9de1-4821-80d0-e57dae268d03\",\r\n        \"name\": \"Uitsmijter\",\r\n        \"servedOn\" : \"2023-09-29\",\r\n        \"price\": 3.7,\r\n        \"description\": \"Two fried eggs, two slices of bread with ham and cheese\",\r\n        \"rating\": 5,\r\n        \"image\": \"https://images.pexels.com/photos/6287520/pexels-photo-6287520.jpeg\",\r\n        \"allergies\": [\"Lactose\", \"Gluten\", \"Egg\"]\r\n    }\r\n    \r\n]"
-              }
-            },
-            "400" : {
-              "statusCode" : "400",
-              "responseTemplates" : {
-                "application/json" : "#set($inputRoot = $input.path('$'))\n{\n  \"status\" : \"INVALID_PARAM_FORMAT\",\n  \"advice\" : \"The parameter 'servedOn' has the incorrect format, please adjust to fit 'yyyy-mm-dd' pattern\"\n}"
-              }
+              "statusCode" : "200"
             }
           },
-          "requestTemplates" : {
-            "application/json" : "{\r\n  #if( $input.params('code') == \"\" )\r\n    \"statusCode\": 200\r\n  #else\r\n    \"statusCode\": $input.params('code')\r\n  #end\r\n}"
+          "requestParameters" : {
+            "integration.request.querystring.fromDay" : "method.request.querystring.fromDay",
+            "integration.request.querystring.toDay" : "method.request.querystring.fromDay",
+            "integration.request.querystring.limit" : "method.request.querystring.fromDay"
           },
-          "passthroughBehavior" : "when_no_match"
+          "passthroughBehavior" : "when_no_templates",
+          "contentHandling" : "CONVERT_TO_TEXT",
+          "type" : "aws_proxy"
         }
       },
       "post" : {
@@ -98,39 +94,18 @@
             "description" : "409 response"
           }
         },
-        "x-amazon-apigateway-request-validator" : "Validate body",
         "x-amazon-apigateway-integration" : {
-          "type" : "mock",
+          "credentials" : "arn:aws:iam::664728525867:role/API-GW-Invoke-Lambda",
+          "httpMethod" : "POST",
+          "uri" : "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:664728525867:function:NewDish/invocations",
           "responses" : {
             "default" : {
-              "statusCode" : "200",
-              "responseTemplates" : {
-                "application/json" : "{\r\n  \"error\" : false,\r\n  \"msg\" : \"ok, whatever man\"  \r\n}"
-              }
-            },
-            "201" : {
-              "statusCode" : "201",
-              "responseTemplates" : {
-                "application/json" : "#set($inputRoot = $input.path('$'))\n{\n  \"status\" : \"SUCCESS\",\n  \"advice\" : \"Get Hungry\"\n}"
-              }
-            },
-            "400" : {
-              "statusCode" : "400",
-              "responseTemplates" : {
-                "application/json" : "#set($inputRoot = $input.path('$'))\n{\n  \"status\" : \"INVALID_PARAM_FORMAT\",\n  \"advice\" : \"The parameter 'date' has the incorrect format, please adjust to 'yyyy-mm-dd'\"\n}"
-              }
-            },
-            "409" : {
-              "statusCode" : "409",
-              "responseTemplates" : {
-                "application/json" : "#set($inputRoot = $input.path('$'))\n{\n  \"status\" : \"DUPLICATE_CONFLICT\",\n  \"advice\" : \"Item with same name and date already exists\"\n}"
-              }
+              "statusCode" : "200"
             }
           },
-          "requestTemplates" : {
-            "application/json" : "{\r\n  #if( $input.params('code') == \"\" )\r\n    \"statusCode\": 201\r\n  #else\r\n    \"statusCode\": $input.params('code')\r\n  #end\r\n}"
-          },
-          "passthroughBehavior" : "when_no_match"
+          "passthroughBehavior" : "when_no_templates",
+          "contentHandling" : "CONVERT_TO_TEXT",
+          "type" : "aws_proxy"
         }
       }
     },
@@ -165,6 +140,9 @@
               "$ref" : "#/definitions/MutationResponse"
             }
           },
+          "500" : {
+            "description" : "500 response"
+          },
           "404" : {
             "description" : "404 response",
             "schema" : {
@@ -172,33 +150,18 @@
             }
           }
         },
-        "x-amazon-apigateway-request-validator" : "Validate body",
         "x-amazon-apigateway-integration" : {
-          "type" : "mock",
+          "credentials" : "arn:aws:iam::664728525867:role/API-GW-Invoke-Lambda",
+          "httpMethod" : "POST",
+          "uri" : "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:664728525867:function:UpdateDish/invocations",
           "responses" : {
             "default" : {
-              "statusCode" : "200",
-              "responseTemplates" : {
-                "application/json" : "{\n    \"status\" : \"SUCCESS\"\n}"
-              }
-            },
-            "400" : {
-              "statusCode" : "400",
-              "responseTemplates" : {
-                "application/json" : "{\n    \"status\": \"INVALID_BODY_STRUCTURE\",\n    \"advice\": \"Verify that the body content is present and in correct JSON structure\"\n}\n"
-              }
-            },
-            "404" : {
-              "statusCode" : "404",
-              "responseTemplates" : {
-                "application/json" : "{\r\n    \"status\": \"UNKNOWN_ID\",\r\n    \"advice\": \"The requested dish was not found\"\r\n}"
-              }
+              "statusCode" : "200"
             }
           },
-          "requestTemplates" : {
-            "application/json" : "{\r\n  #if( $input.params('code') == \"\" )\r\n    \"statusCode\": 200\r\n  #else\r\n    \"statusCode\": $input.params('code')\r\n  #end\r\n}"
-          },
-          "passthroughBehavior" : "when_no_match"
+          "passthroughBehavior" : "when_no_match",
+          "contentHandling" : "CONVERT_TO_TEXT",
+          "type" : "aws_proxy"
         }
       }
     }
@@ -256,6 +219,18 @@
         }
       }
     },
+    "GenericResponse" : {
+      "type" : "object",
+      "required" : [ "error" ],
+      "properties" : {
+        "error" : {
+          "type" : "boolean"
+        },
+        "msg" : {
+          "type" : "string"
+        }
+      }
+    },
     "ArrayOfDishItem" : {
       "type" : "array",
       "items" : {
@@ -264,10 +239,6 @@
     }
   },
   "x-amazon-apigateway-request-validators" : {
-    "Validate body" : {
-      "validateRequestParameters" : false,
-      "validateRequestBody" : true
-    },
     "Validate query string parameters and headers" : {
       "validateRequestParameters" : true,
       "validateRequestBody" : false
