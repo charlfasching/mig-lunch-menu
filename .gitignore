@@ -3,6 +3,9 @@ HELP.md
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+/target/*
+*/target/*
+*/*/target/*
 
 ### STS ###
 .apt_generated
@@ -14,6 +17,7 @@ HELP.md
 .sts4-cache
 
 ### IntelliJ IDEA ###
+.idea
 !**/.idea
 !**/*.iws
 !**/*.iml

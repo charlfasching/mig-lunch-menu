@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.capgemini.cca.mig.menu.dynamo.DynamoDB;
 import com.capgemini.cca.mig.menu.model.Dish;
 import com.capgemini.cca.mig.menu.model.MutationResponse;
 import com.capgemini.cca.mig.menu.model.Status;
@@ -20,6 +21,8 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public class UpdateDishHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
+
+    private static final DynamoDB dishDao = DynamoDB.instance();
 
     public UpdateDishHandler() {
         getObjectMapper();
@@ -42,8 +45,15 @@ public class UpdateDishHandler implements RequestHandler<APIGatewayV2HTTPEvent, 
                     });
             UUID id = UUID.fromString(possibleId);
             Dish newDish = getObjectMapper().readValue(request.getBody(), Dish.class);
+            newDish.setId(id.toString());
             logger.log("deserialized Dish:" + newDish.toString());
-            MutationResponse creationResult = updateDish(newDish, id);
+            dishDao.updateExistingDish(newDish);
+            logger.log("Updating dish with id:"+id);
+            MutationResponse creationResult = MutationResponse.builder()
+                    .status(Status.SUCCESS)
+                    .advice("Dish Update Accepted")
+                    .build();
+
             response.setBody(getObjectMapper().writeValueAsString(creationResult));
             response.setStatusCode(200);
         } catch (JsonMappingException | JsonParseException | DateTimeParseException ex) {
@@ -73,14 +83,6 @@ public class UpdateDishHandler implements RequestHandler<APIGatewayV2HTTPEvent, 
         headers.put("Content-Type", "text/html");
         response.setHeaders(headers);
         return response;
-    }
-
-    private MutationResponse updateDish(Dish newDish, UUID identifier) {
-
-        return MutationResponse.builder()
-                .status(Status.SUCCESS)
-                .advice("Dish Update Accepted")
-                .build();
     }
 
     private static volatile ObjectMapper mapper;

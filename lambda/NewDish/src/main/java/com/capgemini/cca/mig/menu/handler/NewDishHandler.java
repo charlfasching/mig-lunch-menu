@@ -1,14 +1,14 @@
 package com.capgemini.cca.mig.menu.handler;
 
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.capgemini.cca.mig.menu.dynamo.DynamoDB;
 import com.capgemini.cca.mig.menu.model.Dish;
 import com.capgemini.cca.mig.menu.model.MutationResponse;
 import com.capgemini.cca.mig.menu.model.Status;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -16,9 +16,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
 
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.HashMap;
 
 public class NewDishHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
+
+    private static final DynamoDB dishDao = DynamoDB.instance();
 
     public NewDishHandler() {
         getObjectMapper();
@@ -35,9 +37,13 @@ public class NewDishHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
         try {
             Dish newDish = getObjectMapper().readValue(request.getBody(), Dish.class);
             logger.log("deserialized Dish:" + newDish.toString());
-            MutationResponse creationResult = createDish(newDish);
+            dishDao.createNewDish(newDish);
+            MutationResponse creationResult = MutationResponse.builder()
+                            .status(Status.SUCCESS)
+                            .advice("New Dish Accepted")
+                            .build();
             response.setBody(getObjectMapper().writeValueAsString(creationResult));
-            response.setStatusCode(200);
+            response.setStatusCode(202);
         } catch (JsonMappingException | DateTimeParseException | IllegalArgumentException ex) {
             response.setStatusCode(400);
             MutationResponse mrbody = MutationResponse.builder()

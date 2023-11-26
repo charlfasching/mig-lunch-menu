@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.capgemini.cca.mig.menu.dynamo.DynamoDB;
 import com.capgemini.cca.mig.menu.model.Dish;
 import com.capgemini.cca.mig.menu.model.MutationResponse;
 import com.capgemini.cca.mig.menu.model.Status;
@@ -16,9 +17,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class GetDishHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
+
+    private static final DynamoDB dishDao = DynamoDB.instance();
 
 
     public GetDishHandler() {
@@ -41,9 +47,9 @@ public class GetDishHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
         LocalDate fromDateParsed = fromDay.map(s -> LocalDate.parse(s, DateTimeFormatter.ISO_LOCAL_DATE)).orElseGet(LocalDate::now);
         LocalDate fromToParsed = toDay.map(s -> LocalDate.parse(s, DateTimeFormatter.ISO_LOCAL_DATE)).orElseGet(LocalDate::now);
         int limitParsed = limit.map(Integer::parseInt).orElse(10);
-        logger.log("fromDateParsed:" + fromDateParsed);
-        logger.log("fromToParsed:" + fromToParsed);
-        logger.log("limitParsed:" + limitParsed);
+        logger.log("fromDay-Parsed:" + fromDateParsed);
+        logger.log("toDay-Parsed:" + fromToParsed);
+        logger.log("limit-Parsed:" + limitParsed);
 
         APIGatewayV2HTTPResponse response = new APIGatewayV2HTTPResponse();
         response.setIsBase64Encoded(false);
@@ -78,22 +84,7 @@ public class GetDishHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
 
     protected List<Dish> retrieveDishes(LocalDate fromDate, LocalDate toDate, int limit ) {
 
-
-        Dish d1 = Dish.builder().id("d290f1ee-6c54-4b01-90e6-d701748f0851").name("Spaghetti Bolognese")
-                .servedOn(LocalDate.parse("2023-09-28", DateTimeFormatter.ISO_LOCAL_DATE))
-                .price(4.6f)
-                .description("Spaghetti pasta with beef mince and tomato cream sauce")
-                .image("https://images.pexels.com/photos/6287520/pexels-photo-6287520.jpeg")
-                .allergies(Arrays.asList("Lactose", "Gluten")).build();
-
-        Dish d2 = Dish.builder().id("c72bfe44-9de1-4821-80d0-e57dae268d03").name("Uitsmijter")
-                .servedOn(LocalDate.parse("2023-09-29", DateTimeFormatter.ISO_LOCAL_DATE))
-                .price(3.7f)
-                .description("Two fried eggs, two slices of bread with ham and cheese")
-                .image("https://images.pexels.com/photos/6287520/pexels-photo-6287520.jpeg")
-                .allergies(Arrays.asList("Lactose", "Gluten", "Egg")).build();
-
-        return List.of(d1, d2);
+        return dishDao.findDishes(Optional.ofNullable(fromDate), Optional.ofNullable(toDate), limit);
 
     }
 
@@ -119,6 +110,5 @@ public class GetDishHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
         }
         return mapper;
     }
-
 
 }

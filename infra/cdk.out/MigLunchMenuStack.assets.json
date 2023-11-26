@@ -1,0 +1,19 @@
+{
+  "version": "34.0.0",
+  "files": {
+    "58f0be81b28dcaeefebcda52c63eda138eabdb75e562371840bb7b68f3f1e7ca": {
+      "source": {
+        "path": "MigLunchMenuStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "58f0be81b28dcaeefebcda52c63eda138eabdb75e562371840bb7b68f3f1e7ca.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}
