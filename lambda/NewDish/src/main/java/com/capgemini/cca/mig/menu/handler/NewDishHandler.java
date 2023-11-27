@@ -66,13 +66,6 @@ public class NewDishHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
         return response;
     }
 
-    private MutationResponse createDish(Dish newDish) {
-
-
-        return MutationResponse.builder()
-                .status(Status.SUCCESS)
-                .build();
-    }
 
     private static volatile ObjectMapper mapper;
 

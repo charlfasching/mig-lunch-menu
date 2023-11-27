@@ -45,9 +45,9 @@ public class UpdateDishHandler implements RequestHandler<APIGatewayV2HTTPEvent, 
                     });
             UUID id = UUID.fromString(possibleId);
             Dish newDish = getObjectMapper().readValue(request.getBody(), Dish.class);
-            newDish.setId(id.toString());
+
             logger.log("deserialized Dish:" + newDish.toString());
-            dishDao.updateExistingDish(newDish);
+            dishDao.updateExistingDish(newDish, id.toString());
             logger.log("Updating dish with id:"+id);
             MutationResponse creationResult = MutationResponse.builder()
                     .status(Status.SUCCESS)

@@ -5,15 +5,12 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBSaveExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.capgemini.cca.mig.menu.model.Dish;
-import com.capgemini.cca.mig.menu.model.MutationResponse;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.*;
 
@@ -73,19 +70,21 @@ public class DynamoDB {
 
     public void createNewDish(Dish newDish) {
         // Converting LocalDate to Unix Time
-        newDish.setServedOnTime(newDish.getServedOn().toEpochSecond(LocalTime.now(), ZoneOffset.UTC));
+        newDish.setServedOnTime(newDish.getServedOn().atStartOfDay().toEpochSecond(ZoneOffset.UTC));
         // create new unique ID for dish
         newDish.setId(UUID.randomUUID().toString());
         mapper.save(newDish);
 
     }
 
-    public void updateExistingDish(Dish newDish) {
+    public void updateExistingDish(Dish updateDish, String uuid) {
         // Converting LocalDate to Unix Time
-        newDish.setServedOnTime(newDish.getServedOn().toEpochSecond(LocalTime.now(), ZoneOffset.UTC));
-
-        mapper.save(newDish);
-
+        long servedOnTime = updateDish.getServedOn().atStartOfDay().toEpochSecond(ZoneOffset.UTC);
+        Dish existingItem = mapper.load(Dish.class, servedOnTime, uuid);
+        if (existingItem == null) {
+            throw new IllegalArgumentException("id given not found in DB");
+        }
+        mapper.save(existingItem.merge(updateDish));
     }
 
 }
